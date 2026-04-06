@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# =============================================================================
+# git-attribution.sh -- PostToolUse hook: Strip Co-authored-by from commits
+# =============================================================================
+# PURPOSE:  After Claude runs a git commit command, this hook checks if the
+#           commit message contains a "Co-authored-by" trailer and amends
+#           the commit to remove it. All commits should use only your
+#           git identity.
+#
+# HOOK EVENT:  PostToolUse (matcher: Bash)
+# EXIT CODES:  Always 0 (attribution cleanup should not block Claude)
+#
+# ENVIRONMENT VARIABLES:
+#   CLAUDE_TOOL_NAME    -- "Bash"
+#   CLAUDE_TOOL_INPUT   -- the command that was executed
+#
+# WHY:  Claude Code sometimes adds "Co-authored-by: Claude" trailers to
+#       commit messages. This hook ensures clean git history with only
+#       your name on commits.
+# =============================================================================
+
+COMMAND="${CLAUDE_TOOL_INPUT:-}"
+
+# --- Only process git commit commands ---
+if ! echo "$COMMAND" | grep -qi "git commit"; then
+    exit 0
+fi
+
+# --- Check if the last commit has a Co-authored-by trailer ---
+LAST_MSG="$(git log -1 --pretty=%B 2>/dev/null || echo "")"
+
+if echo "$LAST_MSG" | grep -qi "Co-authored-by"; then
+    # Remove the Co-authored-by line(s) and amend the commit
+    CLEAN_MSG="$(echo "$LAST_MSG" | grep -vi "Co-authored-by")"
+
+    # Trim trailing whitespace/newlines
+    CLEAN_MSG="$(echo "$CLEAN_MSG" | sed -e 's/[[:space:]]*$//')"
+
+    if [[ -n "$CLEAN_MSG" ]]; then
+        git commit --amend -m "$CLEAN_MSG" --no-verify 2>/dev/null
+        echo "[INFO] git-attribution: Removed Co-authored-by trailer from commit."
+    fi
+fi
+
+exit 0

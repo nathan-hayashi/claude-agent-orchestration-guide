@@ -1,0 +1,63 @@
+---
+name: architecture-review
+description: Deep architecture analysis of the entire codebase
+context: fork
+---
+
+# Architecture Review
+
+Perform a comprehensive architecture review of this codebase.
+
+## Analysis Steps
+
+1. **Dependency Graph**
+   - Map all module/package dependencies
+   - Identify circular dependencies
+   - Flag tightly coupled components
+
+2. **Layering Analysis**
+   - Verify separation of concerns across layers
+   - Check that lower layers do not import from higher layers
+   - Identify layer-skipping calls (e.g., UI directly accessing DB)
+
+3. **Module Boundaries**
+   - Assess cohesion within each module
+   - Check coupling between modules
+   - Identify god modules (too many responsibilities)
+
+4. **Data Flow**
+   - Trace how data moves through the system
+   - Identify unnecessary data transformations
+   - Check for data duplication across modules
+
+5. **Scalability Concerns**
+   - Identify bottlenecks in the current architecture
+   - Check for stateful components that block horizontal scaling
+   - Review caching strategy
+
+## Output Format
+
+```
+## Architecture Review Summary
+
+### Health Score: X/10
+
+### Critical Issues
+[CRITICAL] description -- affected files/modules
+
+### Warnings
+[WARNING] description -- affected files/modules
+
+### Recommendations
+[INFO] description -- suggested improvement
+
+### Dependency Graph
+(text-based visualization of key dependencies)
+```
+
+## Rules
+
+- Read the entire codebase before forming opinions
+- Compare against the stated architecture in README or docs
+- Be specific: reference actual file paths and module names
+- Prioritize findings by impact on maintainability

@@ -1,0 +1,18 @@
+# Open Code Review (OCR) team composition
+# Adjust counts based on your review needs.
+# More reviewers = more thorough but slower reviews.
+
+team:
+  # Principal engineers: architecture, design patterns, scalability
+  principal: 2
+  # Security specialists: vulnerabilities, auth gaps, data exposure
+  security: 2
+  # Quality engineers: test coverage, error handling, maintainability
+  quality: 1
+
+discourse:
+  # When enabled, reviewers discuss and challenge each other's findings.
+  # This reduces false positives but increases review time.
+  enabled: true
+  # Number of discussion rounds (1-3 recommended)
+  rounds: 2

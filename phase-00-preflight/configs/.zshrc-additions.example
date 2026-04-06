@@ -1,0 +1,55 @@
+# =============================================================================
+# .zshrc additions for Claude Code (macOS)
+# =============================================================================
+# PURPOSE:  Add these lines to your ~/.zshrc to configure your shell for
+#           Claude Code development. Copy the lines you need, or source
+#           this file from your .zshrc.
+#
+# HOW TO USE:
+#   Option A: Copy individual lines into your ~/.zshrc
+#   Option B: Add this line to your ~/.zshrc:
+#             source ~/path/to/.zshrc-additions.example
+# =============================================================================
+
+# --- Claude Code model selection ---
+# Tells Claude Code which AI model to use. claude-opus-4-6 is the most capable.
+export ANTHROPIC_MODEL=claude-opus-4-6
+
+# --- Local binaries ---
+# Adds ~/bin to your PATH so you can run locally installed tools
+# without typing the full path.
+export PATH="$HOME/bin:$PATH"
+
+# --- clone() convenience function ---
+# Quick function to clone a GitHub repo into ~/projects/ and cd into it.
+# Usage: clone owner/repo
+#        clone https://github.com/owner/repo.git
+#
+# Example: clone anthropics/claude-code
+#          -> clones into ~/projects/claude-code and cd's there
+clone() {
+    local repo="$1"
+    local dir
+
+    # If the argument looks like a full URL, extract the repo name
+    if [[ "$repo" == http* ]]; then
+        dir=$(basename "$repo" .git)
+    else
+        # Handle "owner/repo" format
+        dir=$(basename "$repo")
+        repo="https://github.com/$repo.git"
+    fi
+
+    # Clone into ~/projects/ and cd into the new directory
+    git clone "$repo" "$HOME/projects/$dir" && cd "$HOME/projects/$dir"
+}
+
+# --- Homebrew (Apple Silicon) ---
+# If Homebrew is installed in the default Apple Silicon location:
+# eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# --- Node.js version manager (optional) ---
+# If you use nvm to manage Node versions, uncomment these lines:
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"

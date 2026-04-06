@@ -1,0 +1,142 @@
+# =============================================================================
+# threshold-router SKILL.md Example
+# =============================================================================
+# LOCATION: ~/.claude/skills/threshold-router/SKILL.md
+#
+# PURPOSE:  This is the skill definition file for the threshold router.
+#           Claude Code reads this file when the skill is invoked and follows
+#           the instructions to score complexity and assign a tier.
+#
+# HOW SKILLS WORK:
+#   Skills are markdown files with YAML frontmatter. The frontmatter tells
+#   Claude Code the skill's name and description. The markdown body contains
+#   the instructions Claude follows when the skill is invoked.
+#
+#   Skills live in ~/.claude/skills/<skill-name>/SKILL.md
+#   They are invoked with: /skill-name (in the Claude Code prompt)
+#   Or automatically if referenced in CLAUDE.md
+#
+# CUSTOMIZATION:
+#   - Add scoring signals relevant to your domain
+#   - Adjust tier thresholds (maybe T2 starts at 5 for your team)
+#   - Add override keywords your team uses
+#   - Modify tier behaviors to match your review tools
+# =============================================================================
+
+---
+name: threshold-router
+description: >
+  Mandatory complexity scoring system. Computes a 0-10+ score for every
+  prompt and assigns a tier (T1, T2, T3) that controls verification depth.
+  Must be invoked on EVERY user prompt before any other action.
+---
+
+# Threshold Router
+
+## Activation
+# This section tells Claude when to invoke this skill.
+# "MANDATORY" and "EVERY" are strong signals that Claude should
+# always run this, not just when the user asks for it.
+This skill is MANDATORY. Invoke it on EVERY user prompt, no exceptions.
+Announce the tier at the start of every response: [T1], [T2], or [T3].
+
+## Scoring Table
+
+# Each signal adds to the complexity score. The total determines the tier.
+# You can customize these signals for your domain. For example, if your
+# team works heavily with databases, you might add more database-related
+# signals.
+
+Compute a complexity score by summing applicable signals:
+
+| Signal                              | Score  |
+|-------------------------------------|--------|
+| Per 3 files mentioned or affected   | +1     |
+| Destructive keywords (delete, drop) | +2     |
+| Cross-system scope (API + frontend) | +2     |
+| New architecture or infrastructure  | +3     |
+| Security / IAM / auth changes       | +2     |
+| Production deployment               | +2     |
+| Ambiguous or open-ended request     | +1     |
+| Database schema changes             | +2     |
+| Multi-service coordination          | +2     |
+| Performance-critical path           | +1     |
+
+# CUSTOMIZATION IDEAS:
+# | Your custom signal                  | +N     |
+# | Involves legacy code (no tests)     | +2     |
+# | Affects billing/payment logic       | +3     |
+# | Changes public API contract         | +2     |
+# | Modifies CI/CD pipeline             | +1     |
+
+## Tier Assignment
+
+# These thresholds can be adjusted. If your team is more cautious,
+# lower the T2 threshold (e.g., T2 starts at 3). If you want more
+# speed, raise it (e.g., T2 starts at 6).
+
+| Tier | Score | Label            | Behavior                                |
+|------|-------|------------------|-----------------------------------------|
+| T1   | 0-3   | Solo             | Execute directly. Report results.       |
+| T2   | 4-7   | Lean pipeline    | Execute, then spawn review subagents.   |
+| T3   | 8+    | Full orchestra   | Plan (ultrathink), execute, full review.|
+
+## Tier-Specific Behavior
+
+### [T1] Solo (score 0-3)
+# For simple tasks: typo fixes, small config changes, adding a comment.
+- Proceed directly with implementation
+- Run basic verification (type check, relevant tests)
+- No subagent review needed
+
+### [T2] Lean Pipeline (score 4-7)
+# For medium tasks: multi-file changes, new features, bug fixes.
+- Implement the change
+- Spawn review subagents to check:
+  - Code quality and style consistency
+  - Test coverage for changed code
+  - Potential bugs or regressions
+- Address any findings before reporting done
+
+### [T3] Full Orchestra (score 8+)
+# For complex tasks: architectural changes, security updates, major refactors.
+- Create a detailed plan using extended thinking (ultrathink)
+- Get plan approval before implementing
+- Implement the change
+- Run full review pipeline:
+  - OCR multi-agent code review (if available)
+  - Codex verification (if available)
+  - Type checker + full test suite
+- Address all findings before reporting done
+
+## Override System
+
+# These keywords let users bypass the scoring system when they know
+# what they want. The override applies to the CURRENT prompt only.
+
+Users can override the computed tier with keywords:
+
+- **"just do it"** -- Force downgrade to T1 (skip all reviews)
+- **"full review"** -- Force upgrade to T3 (maximum verification)
+
+The override applies to the current prompt only, not future prompts.
+
+## Response Format
+
+# This template ensures consistent tier announcements across all responses.
+Always start your response with the tier announcement:
+
+```
+[T1] This is a simple change...
+[T2] This involves multiple files...
+[T3] This is a complex architectural change...
+```
+
+## Edge Cases
+
+# These rules handle ambiguous situations.
+- If scoring is ambiguous, round UP (prefer more review over less)
+- If the user says "quick fix" but the change is complex, announce T2
+  and explain why you scored it higher
+- If the user provides no context, ask for clarification rather than
+  defaulting to T1

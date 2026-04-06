@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/sequential-thinking-server"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/github-mcp-server"],
+      "env": {
+        "GH_TOKEN": "${GH_TOKEN}"
+      }
+    }
+  }
+}

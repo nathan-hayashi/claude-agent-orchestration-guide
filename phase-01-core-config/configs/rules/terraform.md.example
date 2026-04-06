@@ -1,0 +1,33 @@
+---
+paths: ["**/*.tf", "**/*.tfvars"]
+---
+
+# Terraform Rules
+
+When editing Terraform files, follow these practices:
+
+## Formatting and Validation
+- Run `terraform fmt` before committing any .tf file changes
+- Run `terraform validate` to catch syntax errors early
+- Use consistent indentation (2 spaces)
+
+## Security
+- NEVER use wildcard (*) in IAM policy actions or resources
+- Always specify the minimum required permissions
+- Use data sources to reference existing resources instead of hardcoding ARNs
+
+## Versioning
+- Pin all provider versions with exact version constraints
+  Example: `required_providers { aws = { version = "= 5.31.0" } }`
+- Pin all module versions when using registry modules
+
+## Tagging
+- Every resource that supports tags MUST include at minimum:
+  - `Environment` (dev, staging, prod)
+  - `ManagedBy` (terraform)
+  - `Project` (the project name)
+
+## State
+- Never modify .tfstate files manually
+- Use remote state backends (S3, Azure Blob, etc.)
+- Enable state locking

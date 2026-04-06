@@ -1,0 +1,70 @@
+---
+name: terraform-iac
+description: Terraform infrastructure-as-code best practices review
+paths:
+  - "**/*.tf"
+  - "**/*.tfvars"
+  - "**/*.tfvars.json"
+---
+
+# Terraform IaC Review
+
+Review Terraform configurations for best practices and security.
+
+## Analysis Steps
+
+1. **Module Structure**
+   - Verify modules are properly decomposed
+   - Check for monolithic main.tf files
+   - Ensure outputs are documented
+
+2. **State Management**
+   - Verify remote backend configuration
+   - Check state locking is enabled
+   - Look for local state files that should not be committed
+
+3. **Provider Configuration**
+   - Ensure provider versions are pinned (not using >= or ~>)
+   - Check for required_providers block
+   - Verify terraform version constraint
+
+4. **Security**
+   - Review security group rules (no 0.0.0.0/0 on sensitive ports)
+   - Check IAM policies for least privilege
+   - Ensure encryption is enabled (S3, RDS, EBS, etc.)
+   - Look for hardcoded secrets in .tf or .tfvars files
+
+5. **Naming and Tagging**
+   - Verify consistent naming convention
+   - Check for required tags (environment, owner, cost-center)
+   - Ensure descriptions on all variables and outputs
+
+6. **Plan Safety**
+   - Identify resources that would be destroyed on apply
+   - Check for prevent_destroy lifecycle rules on critical resources
+   - Review create_before_destroy settings
+
+## Output Format
+
+```
+## Terraform Review Summary
+
+### Findings
+[SEVERITY] resource.name -- description
+
+### Security
+[list security-specific findings]
+
+### Best Practices
+[list non-security improvements]
+
+### Drift Risk
+[resources at risk of unintended changes]
+```
+
+## Rules
+
+- Check ALL .tf files, not just main.tf
+- Cross-reference variable defaults with .tfvars values
+- Flag any resource without tags
+- Always check for hardcoded credentials

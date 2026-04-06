@@ -1,0 +1,31 @@
+# =============================================================================
+# .wslconfig -- WSL 2 Resource Limits
+# =============================================================================
+# LOCATION: Place this file at C:\Users\<YourUsername>\.wslconfig
+#           (On WSL, that's /mnt/c/Users/<YourUsername>/.wslconfig)
+#
+# PURPOSE:  Without this file, WSL 2 can consume ALL your system RAM.
+#           These settings cap WSL's resource usage to leave room for
+#           Windows apps (browser, VS Code, etc.).
+#
+# AFTER SAVING: You MUST restart WSL from PowerShell:
+#               wsl --shutdown
+#               Then reopen your WSL terminal.
+#
+# TUNING GUIDE:
+#   Your total RAM | memory= | swap= | processors=
+#   8 GB           | 4GB     | 2GB   | 2
+#   16 GB          | 8GB     | 4GB   | 4
+#   32 GB          | 12GB    | 4GB   | 6
+#   64 GB          | 16GB    | 8GB   | 8
+# =============================================================================
+
+[wsl2]
+# Maximum RAM WSL 2 can use. Default (no config) is 50% of system RAM.
+memory=8GB
+
+# Number of CPU cores WSL 2 can use. Default is all cores.
+processors=4
+
+# Swap file size. Swap is disk space used as virtual memory when RAM is full.
+swap=4GB

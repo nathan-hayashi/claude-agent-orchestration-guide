@@ -1,0 +1,38 @@
+# =============================================================================
+# CLAUDE.local.md Example
+# =============================================================================
+# LOCATION: <project-root>/CLAUDE.local.md  (NOT committed to git)
+#
+# PURPOSE:  Personal overrides that only apply to YOU. This file is gitignored
+#           so it won't affect your teammates.
+#
+# USE CASES:
+#   - You prefer a different editor than the team default
+#   - You want extra verbose output during development
+#   - You have local paths that differ from the team standard
+#   - You want to temporarily disable a rule
+#
+# HOW TO USE:
+#   1. Copy this file to your project's root directory
+#   2. Rename it to CLAUDE.local.md
+#   3. Add your personal overrides
+#   4. Make sure .gitignore includes CLAUDE.local.md
+# =============================================================================
+
+# Personal Overrides
+
+## My Preferences
+# Add any personal rules that override the project CLAUDE.md.
+# These only apply to your machine.
+
+# Example: I prefer verbose output during development
+# - Always show full stack traces in error messages
+# - Include debug logging in test runs
+
+# Example: My local paths differ from the team
+# - My database runs on port 5433 (not the default 5432)
+# - My Redis instance is at localhost:6380
+
+# Example: Temporary overrides
+# - Skip linting on save (I'll run it manually)
+# - Use draft mode for all builds (faster iteration)

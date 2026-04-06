@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# =============================================================================
+# auto-format.sh -- PostToolUse hook: Auto-format with Prettier
+# =============================================================================
+# PURPOSE:  Runs Prettier on files after Claude creates or edits them.
+#           This ensures consistent formatting without Claude needing to
+#           think about it.
+#
+# HOOK EVENT:  PostToolUse (matcher: Write|Edit)
+# EXIT CODES:  Always 0 (formatting failures should not block Claude)
+#
+# ENVIRONMENT VARIABLES:
+#   CLAUDE_TOOL_NAME    -- "Write" or "Edit"
+#   CLAUDE_TOOL_INPUT   -- JSON containing the file path
+#
+# SUPPORTED EXTENSIONS:  .js, .ts, .jsx, .tsx, .css, .scss, .md, .json, .yaml, .yml, .html
+# =============================================================================
+
+INPUT="${CLAUDE_TOOL_INPUT:-}"
+
+# --- Extract file path from tool input ---
+# The input is JSON. We try to extract the file_path field.
+# Simple approach: look for common path patterns.
+FILE_PATH=""
+if command -v python3 &>/dev/null; then
+    FILE_PATH="$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(data.get('file_path', data.get('path', '')))
+except:
+    print('')
+" 2>/dev/null)"
+fi
+
+# If python3 extraction failed, try grep
+if [[ -z "$FILE_PATH" ]]; then
+    FILE_PATH="$(echo "$INPUT" | grep -oP '"file_path"\s*:\s*"\K[^"]+' 2>/dev/null || echo "")"
+fi
+
+# --- Check if we got a file path ---
+if [[ -z "$FILE_PATH" ]]; then
+    # Could not determine file path -- skip silently
+    exit 0
+fi
+
+# --- Check if the file extension is supported by Prettier ---
+EXTENSION="${FILE_PATH##*.}"
+case "$EXTENSION" in
+    js|ts|jsx|tsx|css|scss|md|json|yaml|yml|html|astro|svelte|vue)
+        # Supported -- continue to format
+        ;;
+    *)
+        # Not a file type Prettier handles -- skip
+        exit 0
+        ;;
+esac
+
+# --- Check if Prettier is available ---
+if ! command -v prettier &>/dev/null; then
+    # Prettier not installed -- skip silently
+    exit 0
+fi
+
+# --- Check if file exists ---
+if [[ ! -f "$FILE_PATH" ]]; then
+    exit 0
+fi
+
+# --- Run Prettier ---
+# --write: format the file in place
+# --log-level=error: only show actual errors, not info messages
+prettier --write --log-level=error "$FILE_PATH" 2>/dev/null
+
+# Always exit 0 -- we don't want formatting failures to interrupt Claude
+exit 0

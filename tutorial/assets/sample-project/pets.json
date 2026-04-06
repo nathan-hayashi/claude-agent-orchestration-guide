@@ -1,0 +1,12 @@
+{
+  "dogs": [
+    {"name": "Buddy", "breed": "Golden Retriever", "age": 3, "status": "available"},
+    {"name": "Luna", "breed": "Siberian Husky", "age": 2, "status": "available"},
+    {"name": "Max", "breed": "Beagle", "age": 5, "status": "adopted"}
+  ],
+  "cats": [
+    {"name": "Whiskers", "breed": "Tabby", "age": 4, "status": "available"},
+    {"name": "Shadow", "breed": "Black Shorthair", "age": 1, "status": "available"},
+    {"name": "Mochi", "breed": "Calico", "age": 3, "status": "adopted"}
+  ]
+}

@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# =============================================================================
+# error-recovery.sh -- PostToolUseFail hook: Provide retry guidance
+# =============================================================================
+# PURPOSE:  When a tool fails (e.g., a bash command exits non-zero, a file
+#           write fails), this hook provides helpful guidance about what
+#           went wrong and how to fix it.
+#
+# HOOK EVENT:  PostToolUseFail (matcher: *)
+# EXIT CODES:  Always 0 (this is informational only)
+#
+# ENVIRONMENT VARIABLES:
+#   CLAUDE_TOOL_NAME       -- which tool failed (Bash, Write, Edit, etc.)
+#   CLAUDE_TOOL_INPUT      -- the input that caused the failure
+#   CLAUDE_TOOL_OUTPUT     -- the error output from the tool
+# =============================================================================
+
+TOOL="${CLAUDE_TOOL_NAME:-unknown}"
+INPUT="${CLAUDE_TOOL_INPUT:-}"
+OUTPUT="${CLAUDE_TOOL_OUTPUT:-}"
+
+echo ""
+echo "[WARN] Tool failed: $TOOL"
+
+# --- Provide tool-specific guidance ---
+case "$TOOL" in
+    Bash)
+        # Check for common bash failure patterns
+        if echo "$OUTPUT" | grep -qi "permission denied"; then
+            echo "[INFO] Retry guidance: Permission denied."
+            echo "       - Check file permissions with: ls -la <file>"
+            echo "       - You may need: chmod +x <script> or sudo"
+        elif echo "$OUTPUT" | grep -qi "command not found"; then
+            echo "[INFO] Retry guidance: Command not found."
+            echo "       - Check if the tool is installed: which <command>"
+            echo "       - You may need to install it or add it to PATH"
+        elif echo "$OUTPUT" | grep -qi "no such file"; then
+            echo "[INFO] Retry guidance: File or directory not found."
+            echo "       - Verify the path exists: ls -la <path>"
+            echo "       - Check for typos in the file path"
+        elif echo "$OUTPUT" | grep -qi "ENOSPC\|no space left"; then
+            echo "[INFO] Retry guidance: Disk full."
+            echo "       - Check disk space: df -h"
+            echo "       - Clean up temp files or increase disk size"
+        else
+            echo "[INFO] Retry guidance: Check the error output above."
+            echo "       - Try running the command manually to see full output"
+            echo "       - Check if all dependencies are installed"
+        fi
+        ;;
+
+    Write|Edit)
+        if echo "$OUTPUT" | grep -qi "permission denied"; then
+            echo "[INFO] Retry guidance: Cannot write to file."
+            echo "       - Check directory permissions: ls -la <directory>"
+        elif echo "$OUTPUT" | grep -qi "read only\|EROFS"; then
+            echo "[INFO] Retry guidance: Filesystem is read-only."
+            echo "       - Check mount options: mount | grep <path>"
+        else
+            echo "[INFO] Retry guidance: File operation failed."
+            echo "       - Verify the target directory exists"
+            echo "       - Check file path for typos"
+        fi
+        ;;
+
+    *)
+        echo "[INFO] Retry guidance: Review the error message and try again."
+        echo "       - If the error persists, try a different approach"
+        ;;
+esac
+
+echo ""
+exit 0

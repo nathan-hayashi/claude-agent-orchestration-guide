@@ -1,0 +1,15 @@
+{
+  "autoMode": {
+    "environment": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(npm test*)",
+      "Bash(npm run lint*)",
+      "Bash(prettier*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
+    ]
+  }
+}

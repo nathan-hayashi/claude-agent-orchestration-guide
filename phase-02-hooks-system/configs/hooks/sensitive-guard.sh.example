@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# =============================================================================
+# sensitive-guard.sh -- PreToolUse hook: Guard sensitive file writes
+# =============================================================================
+# PURPOSE:  Inspects Write and Edit operations BEFORE they happen and warns
+#           about writes to sensitive files. Does not block by default -- logs
+#           a warning so you can review. Change exit code to 1 to block.
+#
+# HOOK EVENT:  PreToolUse (matcher: Write|Edit)
+# EXIT CODES:  0 = allow the write (with warning)
+#              1 = block the write (uncomment the exit 1 lines to enable)
+#
+# ENVIRONMENT VARIABLES:
+#   CLAUDE_TOOL_NAME    -- "Write" or "Edit"
+#   CLAUDE_TOOL_INPUT   -- JSON containing the file path and content
+#
+# GUARDED FILES:
+#   .env, .env.local, .env.production  -- environment secrets
+#   credentials.json, secrets.json      -- API keys and tokens
+#   .gitignore                          -- could expose committed secrets if modified
+#   id_rsa, id_ed25519                  -- SSH private keys
+# =============================================================================
+
+INPUT="${CLAUDE_TOOL_INPUT:-}"
+
+# --- Patterns for sensitive file paths ---
+SENSITIVE_PATTERNS=(
+    '\.env'
+    'credentials\.json'
+    'secrets\.json'
+    'secret\.json'
+    '\.gitignore'
+    'id_rsa'
+    'id_ed25519'
+    '\.pem$'
+    '\.key$'
+    'token\.json'
+    'auth\.json'
+)
+
+# --- Check if the target file matches any sensitive pattern ---
+for PATTERN in "${SENSITIVE_PATTERNS[@]}"; do
+    if echo "$INPUT" | grep -qEi "$PATTERN"; then
+        echo "[WARN] Sensitive file detected: matches pattern '$PATTERN'"
+        echo "       Tool: $CLAUDE_TOOL_NAME"
+        echo "       This hook (sensitive-guard.sh) flagged this operation."
+        echo ""
+        echo "       Review the change carefully before allowing it."
+        echo ""
+
+        # To BLOCK instead of WARN, uncomment the next line:
+        # exit 1
+
+        # Currently just warns and allows
+        exit 0
+    fi
+done
+
+# File is not sensitive -- allow the write
+exit 0

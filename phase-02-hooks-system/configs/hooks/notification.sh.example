@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# =============================================================================
+# notification.sh -- Notification hook: Desktop toast when input needed
+# =============================================================================
+# PURPOSE:  Sends a desktop notification when Claude Code needs human input.
+#           This is useful when you leave Claude running in the background --
+#           you'll get a toast notification instead of having to keep watching
+#           the terminal.
+#
+# HOOK EVENT:  Notification (matcher: *)
+# EXIT CODES:  Always 0 (notification failures should not block Claude)
+#
+# ENVIRONMENT VARIABLES:
+#   CLAUDE_NOTIFICATION_MESSAGE  -- the message Claude wants to show you
+#
+# PLATFORMS:
+#   WSL:    Uses wsl-notify-send.exe (installed in Phase 0)
+#   macOS:  Uses osascript (built-in)
+#   Linux:  Uses notify-send (usually pre-installed)
+# =============================================================================
+
+MESSAGE="${CLAUDE_NOTIFICATION_MESSAGE:-Claude Code needs your input}"
+
+# --- Detect platform and send notification ---
+
+# WSL: use wsl-notify-send.exe
+if [[ -f "$HOME/bin/wsl-notify-send.exe" ]]; then
+    "$HOME/bin/wsl-notify-send.exe" \
+        --category "Claude Code" \
+        "$MESSAGE" 2>/dev/null
+    exit 0
+fi
+
+# macOS: use osascript
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    osascript -e "display notification \"$MESSAGE\" with title \"Claude Code\" subtitle \"Input Needed\"" 2>/dev/null
+    exit 0
+fi
+
+# Linux: use notify-send
+if command -v notify-send &>/dev/null; then
+    notify-send "Claude Code" "$MESSAGE" --urgency=normal 2>/dev/null
+    exit 0
+fi
+
+# No notification method available -- fail silently
+exit 0

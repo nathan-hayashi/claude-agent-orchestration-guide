@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# =============================================================================
+# bash-blocker.sh -- PreToolUse hook: Block dangerous bash commands
+# =============================================================================
+# PURPOSE:  Inspects bash commands BEFORE they run and blocks dangerous ones.
+#           This is a safety net that catches destructive commands even if they
+#           slip through the permission system.
+#
+# HOOK EVENT:  PreToolUse (matcher: Bash)
+# EXIT CODES:  0 = allow the command to run
+#              Non-zero = block the command
+#
+# ENVIRONMENT VARIABLES (set by Claude Code):
+#   CLAUDE_TOOL_NAME    -- always "Bash" for this hook
+#   CLAUDE_TOOL_INPUT   -- the command Claude wants to run (JSON string)
+#
+# BLOCKED PATTERNS:
+#   - rm -rf / (and variants) -- deletes entire filesystem
+#   - fork bombs -- :(){ :|:& };: and variants
+#   - terraform destroy -- destroys cloud infrastructure
+#   - kubectl delete namespace -- deletes entire Kubernetes namespaces
+#   - dd if= -- raw disk operations
+# =============================================================================
+
+# Extract the command from the JSON input.
+# CLAUDE_TOOL_INPUT looks like: {"command": "ls -la"}
+# We need just the command string.
+COMMAND="${CLAUDE_TOOL_INPUT:-}"
+
+# --- List of patterns to block ---
+# Each pattern is a regex that matches dangerous commands.
+# Add more patterns here as needed.
+BLOCKED_PATTERNS=(
+    'rm\s+-rf\s+/'            # rm -rf / or rm -rf /anything
+    'rm\s+-rf\s+\*'           # rm -rf *
+    'rm\s+-rf\s+~'            # rm -rf ~ (home directory)
+    'rm\s+-rf\s+\$HOME'       # rm -rf $HOME
+    ':\(\)\{.*\|.*&.*\};:'    # fork bomb variants
+    'terraform\s+destroy'     # terraform destroy
+    'kubectl\s+delete\s+namespace'  # kubectl delete namespace
+    'dd\s+if='                # raw disk write
+    'mkfs\.'                  # format filesystem
+    '>\s*/dev/sd'             # write to raw disk device
+    'chmod\s+-R\s+777\s+/'   # chmod 777 on root
+)
+
+# --- Check each pattern ---
+for PATTERN in "${BLOCKED_PATTERNS[@]}"; do
+    if echo "$COMMAND" | grep -qEi "$PATTERN"; then
+        echo "[FAIL] BLOCKED: Command matches dangerous pattern: $PATTERN"
+        echo "       Command was: $COMMAND"
+        echo "       This hook (bash-blocker.sh) prevented execution."
+        exit 1
+    fi
+done
+
+# Command is safe -- allow it to proceed
+exit 0

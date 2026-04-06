@@ -1,0 +1,32 @@
+---
+paths: ["**/iam/**", "**/policy/**", "**/auth/**", "**/*.env*"]
+---
+
+# Security Rules
+
+When editing security-sensitive files, follow these practices:
+
+## Principle of Least Privilege
+- Grant only the minimum permissions needed for the task
+- Never use admin or wildcard permissions unless explicitly approved
+- Scope permissions to specific resources, not entire accounts
+
+## Documentation
+- Document every permission grant with a comment explaining WHY it is needed
+- Include the date and ticket/issue number for audit trails
+- Example: `# JIRA-1234: Lambda needs S3 read for config files (2024-01-15)`
+
+## Secrets
+- NEVER hardcode secrets, API keys, passwords, or tokens in any file
+- Use environment variables, AWS Secrets Manager, or HashiCorp Vault
+- If you find a hardcoded secret, flag it immediately as [FAIL]
+
+## Escalation
+- Any change to IAM policies, auth flows, or security groups is T2+ complexity
+- Request human review before applying security changes to production
+- When in doubt, escalate rather than proceed
+
+## .env Files
+- Never commit .env files to git (ensure .gitignore has .env*)
+- Use .env.example with placeholder values for documentation
+- Rotate any secret that was accidentally committed

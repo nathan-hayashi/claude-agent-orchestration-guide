@@ -1,0 +1,35 @@
+---
+paths: ["**/Dockerfile*", "**/docker-compose*"]
+---
+
+# Docker Rules
+
+When editing Docker files, follow these practices:
+
+## Base Images
+- Always pin image versions with specific tags (never use `latest`)
+  Good: `FROM node:20.11-alpine3.19`
+  Bad:  `FROM node:latest`
+- Prefer Alpine-based images for smaller attack surface
+- Use official images from Docker Hub when available
+
+## Multi-Stage Builds
+- Use multi-stage builds to keep final images small
+- Build dependencies in a builder stage, copy only artifacts to final stage
+- Example pattern: builder stage -> test stage -> production stage
+
+## Health Checks
+- Every service container MUST have a HEALTHCHECK instruction
+  Example: `HEALTHCHECK --interval=30s CMD curl -f http://localhost:3000/health || exit 1`
+- Set appropriate interval, timeout, and retries
+
+## Security
+- Never run containers as root (use `USER nonroot` or similar)
+- Do not store secrets in Dockerfiles or docker-compose files
+- Use .dockerignore to exclude .env, .git, node_modules, etc.
+
+## Compose
+- Pin all image versions in docker-compose files
+- Use named volumes for persistent data
+- Set resource limits (memory, CPU) for each service
+- Use networks to isolate services that do not need to communicate

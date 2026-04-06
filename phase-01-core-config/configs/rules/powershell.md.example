@@ -1,0 +1,41 @@
+---
+paths: ["**/*.ps1", "**/*.psm1"]
+---
+
+# PowerShell Rules
+
+When editing PowerShell scripts, follow these practices:
+
+## Naming
+- Use approved PowerShell verbs (Get, Set, New, Remove, etc.)
+  Run `Get-Verb` to see the full list of approved verbs
+- Use PascalCase for function names: Get-UserReport, not get_user_report
+- Use PascalCase for parameter names
+
+## Function Structure
+- Every function MUST include a help block (comment-based help):
+  ```powershell
+  <#
+  .SYNOPSIS
+      Brief description of what the function does.
+  .DESCRIPTION
+      Detailed description.
+  .PARAMETER Name
+      Description of each parameter.
+  .EXAMPLE
+      Example usage.
+  #>
+  ```
+- Every function MUST use `[CmdletBinding()]` attribute
+- Every function MUST use `param()` block for parameters
+
+## Error Handling
+- Wrap risky operations in try/catch blocks
+- Use `-ErrorAction Stop` when errors should halt execution
+- Log errors with Write-Error, not Write-Host
+- Use `$ErrorActionPreference = "Stop"` at script level for strict mode
+
+## Output
+- Use Write-Verbose for debug/informational output (not Write-Host)
+- Use Write-Output for pipeline-compatible output
+- Return structured objects, not formatted strings

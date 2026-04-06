@@ -1,0 +1,50 @@
+# =============================================================================
+# Project CLAUDE.md Example
+# =============================================================================
+# LOCATION: <project-root>/CLAUDE.md  (checked into git)
+#
+# PURPOSE:  Project-specific instructions that your whole team shares.
+#           This file overrides the global CLAUDE.md for settings that
+#           are specific to this project.
+#
+# HOW TO USE:
+#   1. Copy this file to your project's root directory
+#   2. Rename it to CLAUDE.md
+#   3. Replace the [bracketed] placeholders with real values
+#   4. Commit it to git so your team gets the same Claude behavior
+# =============================================================================
+
+# [Project Name] -- Claude Code Context
+
+## Quick Reference
+
+- **Build**: `[npm run build]`
+- **Dev**: `[npm run dev]`
+- **Test**: `[npm test]`
+- **Lint**: `[npm run lint]`
+
+## Architecture
+
+- **Framework**: [e.g., Astro 5.x, Next.js 14, Express]
+- **Language**: [e.g., TypeScript 5.x, Python 3.12]
+- **Database**: [e.g., PostgreSQL 16, DynamoDB, none]
+- **Deployment**: [e.g., Cloudflare Pages, AWS Lambda, Docker]
+
+## Key Files
+
+- `[src/index.ts]` -- entry point
+- `[src/config.ts]` -- configuration and environment variables
+- `[src/routes/]` -- API routes or page routes
+
+## Critical Constraints
+
+- [List things that must NOT change, e.g.:]
+- Do not modify the database migration files manually
+- The API versioning prefix /v2/ must be preserved
+- Environment variables are loaded from .env (never committed)
+
+## Content / Data
+
+- [Describe where content lives, e.g.:]
+- Blog posts in `src/content/blog/` (Markdown with YAML frontmatter)
+- Configuration in `src/data/` (TypeScript data files)

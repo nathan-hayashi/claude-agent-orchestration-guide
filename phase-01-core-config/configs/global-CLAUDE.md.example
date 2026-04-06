@@ -1,0 +1,88 @@
+# =============================================================================
+# Global CLAUDE.md Example
+# =============================================================================
+# LOCATION: ~/.claude/CLAUDE.md
+#
+# PURPOSE:  This file controls Claude Code's behavior across ALL your projects.
+#           Think of it as the "personality and rules" file. Claude reads this
+#           at the start of every conversation.
+#
+# HOW TO USE:
+#   1. Copy this file to ~/.claude/CLAUDE.md
+#   2. Edit the sections to match your environment
+#   3. The [bracketed] values are placeholders -- replace them
+#
+# HIERARCHY:
+#   This global file is the base. Project-level CLAUDE.md files can override
+#   specific sections. CLAUDE.local.md (gitignored) overrides both.
+# =============================================================================
+
+# Global CLAUDE.md -- [Your Name]'s Development Environment
+
+## Environment
+# Describe your OS, runtime versions, and project structure.
+# Claude uses this to generate correct commands and paths.
+[WSL 2 Ubuntu 24.04 | macOS Sequoia] | Node v24.14.0 | npm 11.9.0
+Projects: separate repos under ~/projects/
+
+## Verification (non-negotiable)
+# These rules prevent Claude from making confident but wrong statements.
+# "Non-negotiable" means Claude must ALWAYS follow these, no exceptions.
+- Before claiming complete, run type checker + relevant tests
+- After compaction or 8+ messages, re-read modified files
+  # Why: Claude's context window has a limit. After many messages, earlier
+  # file contents may be compressed or lost. Re-reading ensures accuracy.
+- When recalling API/library behavior, read source first
+  # Why: Claude's training data has a cutoff date. Libraries change.
+  # Reading the actual source code prevents outdated advice.
+- Never act on recalled information without file verification
+- If grep returns few results, narrow scope (truncation risk)
+  # Why: Large tool outputs may be silently truncated. If a search
+  # returns suspiciously few results, the output may have been cut off.
+- State uncertainty explicitly rather than guessing
+  # Why: "I'm not sure about X, let me check" is better than a wrong answer.
+
+## Code Standards
+# Rules for how code should be written and formatted.
+- Formatter: Prettier (auto-runs via PostToolUse hook)
+  # The PostToolUse hook in settings.json runs Prettier automatically
+  # after Claude creates or edits a file. No manual formatting needed.
+- Commits: conventional format (feat:, fix:, chore:, docs:, refactor:)
+  # Examples:
+  #   feat: add user authentication flow
+  #   fix: resolve race condition in API client
+  #   chore: update dependencies
+  #   docs: add API endpoint documentation
+  #   refactor: extract validation into shared utility
+- No console.log in production; use structured logging
+- No hardcoded secrets; use .env or env vars
+- Pin all dependency versions
+  # Use exact versions (1.2.3) not ranges (^1.2.3) in package.json
+
+## Git Workflow
+# How Claude should interact with git.
+- Branches: main (production), dev (working)
+- Commit to dev. Never push directly to main.
+  # Why: main should only be updated via pull requests after review.
+- Commit messages: explain WHY not just WHAT
+  # Bad:  "update user.ts"
+  # Good: "fix: prevent duplicate login events on page refresh"
+
+## Threshold Escalation (MANDATORY)
+# The threshold system controls how much review happens per task.
+# See Phase 3 for full setup. This section MUST be present or
+# the threshold-router skill won't activate.
+The threshold-router skill MUST be consulted on EVERY prompt.
+Compute the complexity score and announce [T1], [T2], or [T3].
+Override: "just do it" = downgrade | "full review" = T3
+
+## Communication
+# How Claude should talk to you.
+- Direct and concise. No filler.
+  # Bad:  "Great question! Let me help you with that..."
+  # Good: "The issue is in line 42. Here's the fix:"
+- Present options with trade-offs.
+  # Instead of picking one approach, present 2-3 options with pros/cons.
+- State interpretation before executing if ambiguous.
+  # If a request could mean multiple things, Claude should say
+  # "I interpret this as X. If you meant Y, let me know."

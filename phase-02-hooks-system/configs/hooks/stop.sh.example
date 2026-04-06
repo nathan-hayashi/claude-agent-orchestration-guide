@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# =============================================================================
+# stop.sh -- Stop hook: Desktop toast when Claude finishes a task
+# =============================================================================
+# PURPOSE:  Sends a desktop notification when Claude Code finishes a task.
+#           Complements the Notification hook -- together they let you leave
+#           Claude running and get notified both when it needs input AND
+#           when it's done.
+#
+# HOOK EVENT:  Stop (matcher: *)
+# EXIT CODES:  Always 0 (notification failures should not block Claude)
+#
+# ENVIRONMENT VARIABLES:
+#   CLAUDE_STOP_REASON  -- why Claude stopped (if available)
+# =============================================================================
+
+MESSAGE="${CLAUDE_STOP_REASON:-Task complete}"
+
+# --- Detect platform and send notification ---
+
+# WSL: use wsl-notify-send.exe
+if [[ -f "$HOME/bin/wsl-notify-send.exe" ]]; then
+    "$HOME/bin/wsl-notify-send.exe" \
+        --category "Claude Code" \
+        "Task finished: $MESSAGE" 2>/dev/null
+    exit 0
+fi
+
+# macOS: use osascript
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    osascript -e "display notification \"Task finished: $MESSAGE\" with title \"Claude Code\" subtitle \"Complete\"" 2>/dev/null
+    exit 0
+fi
+
+# Linux: use notify-send
+if command -v notify-send &>/dev/null; then
+    notify-send "Claude Code" "Task finished: $MESSAGE" --urgency=low 2>/dev/null
+    exit 0
+fi
+
+# No notification method available -- fail silently
+exit 0

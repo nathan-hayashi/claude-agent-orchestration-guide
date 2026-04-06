@@ -1,0 +1,130 @@
+{
+  "_comment_model": "IMPORTANT: Must be exactly 'claude-opus-4-6'. No ANSI codes, no suffixes.",
+  "model": "claude-opus-4-6",
+
+  "_comment_effort": "Controls how thorough Claude's responses are. 'max' = most detailed.",
+  "effortLevel": "max",
+
+  "_comment_permissions": "Allow/deny rules for tool usage. Allow is checked first, then deny.",
+  "permissions": {
+    "_comment_allow": "34 allow rules covering npm, git, file operations, and built-in tools.",
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(npm install *)",
+      "Bash(npx prettier *)",
+      "Bash(npx eslint *)",
+      "Bash(npx tsc *)",
+      "Bash(node *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(git checkout *)",
+      "Bash(git branch *)",
+      "Bash(git merge *)",
+      "Bash(git stash *)",
+      "Bash(git fetch *)",
+      "Bash(git rebase *)",
+      "Bash(git remote *)",
+      "Bash(git tag *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(sort *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod *)",
+      "Bash(curl *)",
+      "Bash(jq *)",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep"
+    ],
+    "_comment_deny": "8 deny rules blocking destructive operations.",
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf $HOME)",
+      "Bash(:(){ :|:& };:)",
+      "Bash(terraform destroy *)",
+      "Bash(kubectl delete namespace *)",
+      "Bash(dd if=*)"
+    ]
+  },
+
+  "_comment_hooks": "7 hook event types that fire at different points in the tool lifecycle.",
+  "hooks": {
+    "_comment_pre": "PreToolUse fires BEFORE the tool runs. Return non-zero to block.",
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hook": "~/.claude/hooks/bash-blocker.sh",
+        "description": "Block dangerous bash commands (rm -rf, fork bombs, terraform destroy)"
+      },
+      {
+        "matcher": "Write|Edit",
+        "hook": "~/.claude/hooks/sensitive-guard.sh",
+        "description": "Guard writes to .env, credentials, and .gitignore files"
+      }
+    ],
+    "_comment_post": "PostToolUse fires AFTER the tool succeeds. Good for formatting, cleanup.",
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hook": "~/.claude/hooks/auto-format.sh",
+        "description": "Auto-format files with Prettier after creation or edit"
+      },
+      {
+        "matcher": "Bash",
+        "hook": "~/.claude/hooks/git-attribution.sh",
+        "description": "Strip Co-authored-by trailers from git commits"
+      }
+    ],
+    "_comment_fail": "PostToolUseFail fires when a tool errors. Good for recovery hints.",
+    "PostToolUseFail": [
+      {
+        "matcher": "*",
+        "hook": "~/.claude/hooks/error-recovery.sh",
+        "description": "Provide retry guidance when a tool fails"
+      }
+    ],
+    "_comment_notification": "Notification fires when Claude needs human input.",
+    "Notification": [
+      {
+        "matcher": "*",
+        "hook": "~/.claude/hooks/notification.sh",
+        "description": "Desktop toast when Claude needs human input"
+      }
+    ],
+    "_comment_stop": "Stop fires when Claude finishes a task.",
+    "Stop": [
+      {
+        "matcher": "*",
+        "hook": "~/.claude/hooks/stop.sh",
+        "description": "Desktop toast when Claude finishes a task"
+      }
+    ]
+  },
+
+  "_comment_automode": "Auto-mode lets Claude run without confirmation for allowed tools.",
+  "autoMode": {
+    "enabled": true,
+    "_comment_env": "MUST be an array of strings, NOT a single string.",
+    "environment": [
+      "Always announce the complexity tier [T1], [T2], or [T3] at the start of every response.",
+      "Run the threshold-router skill on every prompt before taking any action.",
+      "After completing work, run the type checker and relevant tests before claiming done.",
+      "Never push to main. Commit to dev branch only."
+    ]
+  }
+}
