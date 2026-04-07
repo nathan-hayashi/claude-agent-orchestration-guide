@@ -1,0 +1,10 @@
+team:
+  principal: 2
+  security: 2
+  quality: 1
+discourse:
+  enabled: true
+  rounds: 2
+context:
+  include_claude_md: true
+  include_git_diff: true
